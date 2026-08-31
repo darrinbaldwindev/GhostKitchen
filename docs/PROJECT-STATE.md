@@ -1,13 +1,13 @@
 # Ghost Kitchen Project State
 
-**Last updated:** 2026-08-28
+**Last updated:** 2026-08-31
 
 ## Repository
 
 Canonical repository: `darrinbaldwindev/GhostKitchen`  
 Default branch: `main`
 
-The repository was initially empty. The first project foundation files have now been added.
+The repository foundation is established and the project has moved from documentation bootstrap into validation/design work.
 
 ## Current direction
 
@@ -21,7 +21,7 @@ Packaged goods / convenience products delivered to customers. This is the lower-
 
 ### Model B — Ghost Kitchen Delivery Template
 
-Prepared food produced in an approved commercial kitchen and sold through digital ordering and delivery channels. This is the current primary build focus.
+Prepared food produced in an approved commercial kitchen and sold through digital ordering and delivery channels. This remains the primary build focus.
 
 ## Strategic architecture
 
@@ -37,41 +37,49 @@ The concept library sits above the template as deployable food-business modules.
 ## Current status
 
 - Repository confirmed and accessible.
-- Repository was empty at project start.
-- Initial README created.
-- Delivery Template v1 working specification created.
-- Project state file created.
+- Initial project architecture and decisions established.
+- Delivery Template v1 working specification established.
+- Overseer operating charter established.
+- Mission register established.
+- Unit economics specification v1 established.
+- Pilot concept evaluation framework established.
 - No production application code exists yet.
 - No final food concept has been selected.
 - No final franchise fee or royalty has been fixed for Model B.
 - No final kitchen/equipment specification has been approved.
 
-## Highest-value next actions
+## Active priorities
 
-### P0 — Business model validation
+### P0 — Unit economics
 
-Build a conservative/base/strong unit economics model for the prepared-food franchise. Do not rely on assumptions from Model A.
+Build Conservative/Base/Strong scenarios using recipe-level food cost, packaging, labour, kitchen occupancy, delivery/platform fees, payment costs, marketing and overhead. Explicitly model the economics of any free-delivery customer proposition.
 
 ### P0 — Pilot concept selection
 
-Research candidate concepts against food cost, delivery quality, prep complexity, equipment burden, competition, order value and repeat-purchase potential.
+Evaluate candidate concepts against delivery resilience, food economics, prep complexity, labour efficiency, equipment burden, ingredient overlap, order value, repeat purchase, market demand, competition, packaging, consistency, scalability and compliance complexity.
 
 ### P0 — Pilot operating template
 
-Design one concept from customer order through kitchen production, QA, packaging, dispatch, delivery, review and repeat purchase.
+After concept selection, design the complete customer-order-to-repeat workflow with owners, SOPs, KPIs, QA controls and exception paths.
 
 ### P1 — Technology architecture
 
-Define the vendor-neutral system boundaries for ordering, payments, kitchen workflow, inventory, delivery, CRM, reporting and franchise management.
+Define vendor-neutral boundaries for ordering, payments, kitchen workflow, inventory, delivery, CRM, reporting and franchise management.
 
 ### P1 — Franchise package
 
-Define what the franchisee receives, what remains franchisor-controlled, training/support, setup requirements, ongoing fees and performance standards.
+Define franchisee deliverables, franchisor-controlled standards, training/support, setup requirements, ongoing fees and performance standards after economics are validated.
 
-### P1 — Overseer integration
+### P1 — Ghost Kitchen OS
 
-Define the Ghost Kitchen Overseer data, reports, task model, audit trail and escalation rules. Keep AI advisory and auditable around regulated/high-risk operational decisions.
+Define dashboard, KPI, reporting, task, audit and escalation requirements.
+
+## Regulatory/evidence guardrail
+
+Queensland requirements are being treated as evidence inputs, not assumptions. Prepared-food businesses generally require local-government licensing, food premises must meet applicable food-safety requirements, and current Queensland guidance identifies additional food-safety-management obligations for specified category-one/category-two businesses. Exact requirements must be confirmed for the target premises, menu and jurisdiction before launch.
 
 ## Decision discipline
 
 Unknowns must remain explicitly marked as assumptions or decisions pending validation. Do not present draft pricing, legal requirements, equipment lists or financial returns as established facts.
+
+See `docs/OVERSEER.md` for the operating loop and `docs/MISSIONS.md` for active mission control.
