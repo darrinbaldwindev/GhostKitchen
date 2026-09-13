@@ -1,0 +1,4 @@
+project=ghostkitchen
+source=PILOT-MENU-EVIDENCE-PACKET-2026-09-04.md
+status=EVIDENCE_REQUIRED
+production_write=false
