@@ -18,6 +18,7 @@ REQUIRED = [
 ]
 
 ALLOWED_EVIDENCE = {"VERIFIED_PROJECT", "PUBLIC_REFERENCE", "HYPOTHESIS", "UNKNOWN"}
+ALLOWED_SCENARIO_KEYS = {"scenario_id", "inputs"}
 
 
 def money(value, field="value"):
@@ -28,16 +29,29 @@ def money(value, field="value"):
 
 
 def evaluate(scenario):
+    if not isinstance(scenario, dict):
+        raise ValueError("scenario must be an object")
+    unknown_scenario_keys = set(scenario) - ALLOWED_SCENARIO_KEYS
+    if unknown_scenario_keys:
+        raise ValueError(f"unknown scenario keys: {sorted(unknown_scenario_keys)}")
+
     scenario_id = scenario.get("scenario_id")
     if not isinstance(scenario_id, str) or not scenario_id.strip():
         raise ValueError("scenario_id is required")
+
+    inputs = scenario.get("inputs", {})
+    if not isinstance(inputs, dict):
+        raise ValueError("inputs must be an object")
+    unknown_input_keys = set(inputs) - set(REQUIRED)
+    if unknown_input_keys:
+        raise ValueError(f"unknown economics input keys: {sorted(unknown_input_keys)}")
 
     missing = []
     values = {}
     evidence = {}
 
     for field in REQUIRED:
-        item = scenario.get("inputs", {}).get(field)
+        item = inputs.get(field)
         if not isinstance(item, dict):
             missing.append(field)
             continue
@@ -49,6 +63,8 @@ def evaluate(scenario):
             missing.append(field)
             continue
         value = money(item["value"], field)
+        if field == "net_customer_revenue" and value < 0:
+            raise ValueError("negative net_customer_revenue is not allowed")
         if field != "net_customer_revenue" and value < 0:
             raise ValueError(f"negative cost input is not allowed for {field}")
         values[field] = value
@@ -80,9 +96,17 @@ def evaluate(scenario):
 
 
 def evaluate_batch(payload):
+    if not isinstance(payload, dict):
+        raise ValueError("batch payload must be an object")
+    unknown_batch_keys = set(payload) - {"scenarios"}
+    if unknown_batch_keys:
+        raise ValueError(f"unknown batch keys: {sorted(unknown_batch_keys)}")
     scenarios = payload.get("scenarios", [])
     if not isinstance(scenarios, list):
         raise ValueError("scenarios must be a list")
+    if not scenarios:
+        return {"status": "EMPTY", "commercial_pass_eligible": False, "results": []}
+
     ids = []
     for scenario in scenarios:
         sid = scenario.get("scenario_id") if isinstance(scenario, dict) else None
@@ -91,13 +115,14 @@ def evaluate_batch(payload):
         ids.append(sid)
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate scenario_id")
-    return [evaluate(scenario) for scenario in sorted(scenarios, key=lambda item: item["scenario_id"])]
+    results = [evaluate(scenario) for scenario in sorted(scenarios, key=lambda item: item["scenario_id"])]
+    return {"status": "EVALUATED", "commercial_pass_eligible": any(item.get("commercial_pass_eligible") for item in results), "results": results}
 
 
 def main(path):
     with open(path, "r", encoding="utf-8") as handle:
         payload = json.load(handle)
-    print(json.dumps({"results": evaluate_batch(payload)}, indent=2))
+    print(json.dumps(evaluate_batch(payload), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
