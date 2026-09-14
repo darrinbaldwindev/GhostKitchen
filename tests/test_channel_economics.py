@@ -2,7 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-from tools.channel_economics import evaluate
+from tools.channel_economics import evaluate, evaluate_batch
 
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "economics" / "channel-scenarios.sample.json"
@@ -88,6 +88,31 @@ class ChannelEconomicsTests(unittest.TestCase):
         self.assertLess(float(result["contribution_per_order"]), 0)
         self.assertEqual(result["decision_state"], "PROJECT_EVIDENCE_READY")
         self.assertFalse(result["commercial_pass_eligible"])
+
+    def test_duplicate_or_missing_scenario_id_fails_closed(self):
+        one = verified_scenario("same", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        two = verified_scenario("same", [41, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        with self.assertRaisesRegex(ValueError, "duplicate scenario_id"):
+            evaluate_batch({"scenarios": [one, two]})
+        one["scenario_id"] = ""
+        with self.assertRaisesRegex(ValueError, "scenario_id is required"):
+            evaluate_batch({"scenarios": [one]})
+
+    def test_non_numeric_required_value_identifies_field(self):
+        scenario = verified_scenario("bad-number", [40, 10, "abc", 5, 1, 0, 5, 0, 0, 0, 2])
+        with self.assertRaisesRegex(ValueError, "invalid numeric value for packaging"):
+            evaluate(scenario)
+
+    def test_negative_cost_is_rejected(self):
+        scenario = verified_scenario("negative-cost", [40, 10, -1, 5, 1, 0, 5, 0, 0, 0, 2])
+        with self.assertRaisesRegex(ValueError, "negative cost input is not allowed for packaging"):
+            evaluate(scenario)
+
+    def test_batch_output_is_sorted_by_scenario_id(self):
+        b = verified_scenario("b-case", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        a = verified_scenario("a-case", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        results = evaluate_batch({"scenarios": [b, a]})
+        self.assertEqual([item["scenario_id"] for item in results], ["a-case", "b-case"])
 
 
 if __name__ == "__main__":
