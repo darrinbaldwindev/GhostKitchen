@@ -67,6 +67,11 @@ class ChannelEconomicsTests(unittest.TestCase):
         self.assertIsNone(result["contribution_margin_percent"])
         self.assertFalse(result["commercial_pass_eligible"])
 
+    def test_negative_revenue_is_rejected(self):
+        scenario = verified_scenario("negative-revenue", [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        with self.assertRaisesRegex(ValueError, "negative net_customer_revenue is not allowed"):
+            evaluate(scenario)
+
     def test_rounding_boundary_is_deterministic(self):
         scenario = verified_scenario("rounding-boundary", [10.005, 10.004, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         first = evaluate(scenario)
@@ -108,11 +113,33 @@ class ChannelEconomicsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "negative cost input is not allowed for packaging"):
             evaluate(scenario)
 
-    def test_batch_output_is_sorted_by_scenario_id(self):
+    def test_unknown_input_or_scenario_keys_fail_closed(self):
+        scenario = verified_scenario("unknown-input", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["mystery_cost"] = {"value": 0, "evidence": "VERIFIED_PROJECT"}
+        with self.assertRaisesRegex(ValueError, "unknown economics input keys"):
+            evaluate(scenario)
+        scenario = verified_scenario("unknown-scenario-key", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["commercial_override"] = True
+        with self.assertRaisesRegex(ValueError, "unknown scenario keys"):
+            evaluate(scenario)
+
+    def test_unknown_batch_keys_fail_closed(self):
+        with self.assertRaisesRegex(ValueError, "unknown batch keys"):
+            evaluate_batch({"scenarios": [], "commercial_override": True})
+
+    def test_empty_batch_is_explicit_and_non_commercial(self):
+        result = evaluate_batch({"scenarios": []})
+        self.assertEqual(result, {"status": "EMPTY", "commercial_pass_eligible": False, "results": []})
+
+    def test_batch_output_is_sorted_by_scenario_id_and_deterministic(self):
         b = verified_scenario("b-case", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
         a = verified_scenario("a-case", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
-        results = evaluate_batch({"scenarios": [b, a]})
-        self.assertEqual([item["scenario_id"] for item in results], ["a-case", "b-case"])
+        first = evaluate_batch({"scenarios": [b, a]})
+        reordered_inputs = {k: a["inputs"][k] for k in reversed(list(a["inputs"]))}
+        a_reordered = {"scenario_id": "a-case", "inputs": reordered_inputs}
+        second = evaluate_batch({"scenarios": [a_reordered, b]})
+        self.assertEqual([item["scenario_id"] for item in first["results"]], ["a-case", "b-case"])
+        self.assertEqual(first, second)
 
 
 if __name__ == "__main__":
