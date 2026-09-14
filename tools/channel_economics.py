@@ -22,6 +22,7 @@ ALLOWED_SCENARIO_KEYS = {"scenario_id", "inputs"}
 ALLOWED_INPUT_ITEM_KEYS = {"value", "evidence"}
 ALLOWED_BATCH_KEYS = {"status", "source_note", "scenarios"}
 ALLOWED_BATCH_STATUS = {"DECISION_SUPPORT_ONLY"}
+MAX_SCENARIOS_PER_BATCH = 25
 
 
 def money(value, field="value"):
@@ -133,6 +134,8 @@ def evaluate_batch(payload):
     scenarios = payload.get("scenarios", [])
     if not isinstance(scenarios, list):
         raise ValueError("scenarios must be a list")
+    if len(scenarios) > MAX_SCENARIOS_PER_BATCH:
+        raise ValueError(f"scenario batch exceeds limit of {MAX_SCENARIOS_PER_BATCH}")
     if not scenarios:
         return {"status": "EMPTY", "commercial_pass_eligible": False, "results": [], "evidence_summary": evidence_summary([])}
 
