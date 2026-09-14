@@ -25,18 +25,23 @@ Acceptance: deterministic evaluation; HYPOTHESIS/PUBLIC_REFERENCE remains DECISI
 
 ### GK-V3 — blast-radius and batch-size negatives
 Status: ACTIVE / EXACT_HEAD_CI_PENDING
-Implementation lineage: `256dfa7193da8a5e9c7713cb6bdbce23c83f218b` -> `1b8182b53ffbbf78d7aadcc1241b5a19d1777a03`.
 Implemented deterministic `MAX_SCENARIOS_PER_BATCH = 25` ceiling plus three homogeneous boundary tests:
 1. 26 scenarios fail closed before evaluation;
 2. exactly 25 scenarios remain accepted by the evaluator;
 3. external `source_note` text cannot override the ceiling.
 Security purpose: SG-12 blast-radius limit with SG-06 external-content authority denial. This ceiling is a fixture/evaluator safety limit, not a business throughput or launch authority claim.
-Verification: exact-head Actions query for `1b8182b5...` returned zero runs; no predecessor CI borrowed.
+
+## CI diagnosis — 2026-09-15
+- Fresh PR #32 head before this reconciliation: `b3016106a47d425e83e28bf50183b9b03a921d98`.
+- `.github/workflows/economics-validation.yml` on both `main` and the PR branch declares `pull_request`; base workflow runs the full unittest suite plus representative-order evidence validation.
+- Historical economics workflow success exists only on predecessor heads; no success is transferable to the current head.
+- This documentation-only reconciliation commit intentionally changes no runtime/economics behavior. Its purpose is to refresh the canonical batch and produce a new PR synchronization event so exact-head Actions evidence can be observed without weakening the workflow or tests.
+- Until a workflow run exists and succeeds on the new exact head, GK-V1/GK-V3 remain ACTIVE/CI_PENDING.
 
 ## Blockers / UNKNOWNs
-- Exact-head CI for GK-V1/V3 remains pending/absent.
+- Exact-head CI for GK-V1/V3 remains pending until the newly synchronized head receives workflow evidence.
 - Verified real project economics inputs remain incomplete; synthetic/public-reference arithmetic is not verified profitability.
 - Commercial launch and any external action remain owner-gated.
 
 ## Replenishment rule
-On the next cycle: fresh-scan PR #32 and exact-head CI first. If the exact changed head receives a clean economics workflow, promote only the tested bounded fixture scope. Then consume GK-V2 with 2–5 provenance-labelled economics rows only where evidence exists. If CI remains absent, diagnose workflow trigger/Actions state rather than stacking unrelated implementation. Preserve PR #32 as draft/unmerged.
+Fresh-scan PR #32 and exact-head CI first. If the newly synchronized exact head receives a clean economics workflow, promote only the tested bounded fixture scope and then consume GK-V2 with 2–5 provenance-labelled economics rows where evidence exists. If exact-head CI is still absent, record the Actions-trigger/evidence defect precisely and move to another Lane C subqueue rather than stacking unrelated implementation. Preserve PR #32 as draft/unmerged.
