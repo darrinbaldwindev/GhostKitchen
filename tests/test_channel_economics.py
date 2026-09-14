@@ -72,6 +72,13 @@ class ChannelEconomicsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "negative net_customer_revenue is not allowed"):
             evaluate(scenario)
 
+    def test_non_finite_numeric_values_are_rejected(self):
+        for label, value in (("nan", "NaN"), ("positive-infinity", "Infinity"), ("negative-infinity", "-Infinity")):
+            with self.subTest(label=label):
+                scenario = verified_scenario(label, [40, 10, value, 5, 1, 0, 5, 0, 0, 0, 2])
+                with self.assertRaisesRegex(ValueError, "non-finite numeric value for packaging"):
+                    evaluate(scenario)
+
     def test_rounding_boundary_is_deterministic(self):
         scenario = verified_scenario("rounding-boundary", [10.005, 10.004, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         first = evaluate(scenario)
