@@ -19,7 +19,9 @@ REQUIRED = [
 
 ALLOWED_EVIDENCE = {"VERIFIED_PROJECT", "PUBLIC_REFERENCE", "HYPOTHESIS", "UNKNOWN"}
 ALLOWED_SCENARIO_KEYS = {"scenario_id", "inputs"}
+ALLOWED_INPUT_ITEM_KEYS = {"value", "evidence"}
 ALLOWED_BATCH_KEYS = {"status", "source_note", "scenarios"}
+ALLOWED_BATCH_STATUS = {"DECISION_SUPPORT_ONLY"}
 
 
 def money(value, field="value"):
@@ -61,6 +63,9 @@ def evaluate(scenario):
         if not isinstance(item, dict):
             missing.append(field)
             continue
+        unknown_item_keys = set(item) - ALLOWED_INPUT_ITEM_KEYS
+        if unknown_item_keys:
+            raise ValueError(f"unknown evidence keys for {field}: {sorted(unknown_item_keys)}")
         ev = item.get("evidence", "UNKNOWN")
         if ev not in ALLOWED_EVIDENCE:
             raise ValueError(f"invalid evidence class for {field}: {ev}")
@@ -101,17 +106,35 @@ def evaluate(scenario):
     }
 
 
+def evidence_summary(results):
+    return {
+        "calculated_scenarios": sum(item.get("status") == "CALCULATED" for item in results),
+        "not_testable_scenarios": sum(item.get("status") == "NOT_TESTABLE" for item in results),
+        "project_evidence_ready_scenarios": sum(item.get("decision_state") == "PROJECT_EVIDENCE_READY" for item in results),
+        "decision_support_only_scenarios": sum(item.get("decision_state") == "DECISION_SUPPORT_ONLY" for item in results),
+    }
+
+
 def evaluate_batch(payload):
     if not isinstance(payload, dict):
         raise ValueError("batch payload must be an object")
     unknown_batch_keys = set(payload) - ALLOWED_BATCH_KEYS
     if unknown_batch_keys:
         raise ValueError(f"unknown batch keys: {sorted(unknown_batch_keys)}")
+
+    batch_status = payload.get("status")
+    if batch_status is not None and batch_status not in ALLOWED_BATCH_STATUS:
+        raise ValueError(f"invalid batch status: {batch_status}")
+
+    source_note = payload.get("source_note")
+    if source_note is not None and (not isinstance(source_note, str) or not source_note.strip()):
+        raise ValueError("source_note must be a non-empty string")
+
     scenarios = payload.get("scenarios", [])
     if not isinstance(scenarios, list):
         raise ValueError("scenarios must be a list")
     if not scenarios:
-        return {"status": "EMPTY", "commercial_pass_eligible": False, "results": []}
+        return {"status": "EMPTY", "commercial_pass_eligible": False, "results": [], "evidence_summary": evidence_summary([])}
 
     ids = []
     for scenario in scenarios:
@@ -122,7 +145,12 @@ def evaluate_batch(payload):
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate scenario_id")
     results = [evaluate(scenario) for scenario in sorted(scenarios, key=lambda item: item["scenario_id"])]
-    return {"status": "EVALUATED", "commercial_pass_eligible": any(item.get("commercial_pass_eligible") for item in results), "results": results}
+    return {
+        "status": "EVALUATED",
+        "commercial_pass_eligible": any(item.get("commercial_pass_eligible") for item in results),
+        "results": results,
+        "evidence_summary": evidence_summary(results),
+    }
 
 
 def main(path):
