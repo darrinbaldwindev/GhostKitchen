@@ -19,6 +19,7 @@ REQUIRED = [
 
 ALLOWED_EVIDENCE = {"VERIFIED_PROJECT", "PUBLIC_REFERENCE", "HYPOTHESIS", "UNKNOWN"}
 ALLOWED_SCENARIO_KEYS = {"scenario_id", "inputs"}
+ALLOWED_BATCH_KEYS = {"status", "source_note", "scenarios"}
 
 
 def money(value, field="value"):
@@ -98,7 +99,7 @@ def evaluate(scenario):
 def evaluate_batch(payload):
     if not isinstance(payload, dict):
         raise ValueError("batch payload must be an object")
-    unknown_batch_keys = set(payload) - {"scenarios"}
+    unknown_batch_keys = set(payload) - ALLOWED_BATCH_KEYS
     if unknown_batch_keys:
         raise ValueError(f"unknown batch keys: {sorted(unknown_batch_keys)}")
     scenarios = payload.get("scenarios", [])
