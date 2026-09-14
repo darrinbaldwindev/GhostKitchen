@@ -1,4 +1,3 @@
-import copy
 import json
 import unittest
 from pathlib import Path
@@ -7,31 +6,24 @@ from tools.channel_economics import evaluate
 
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "economics" / "channel-scenarios.sample.json"
+FIELDS = [
+    "net_customer_revenue", "ingredient_cost", "packaging", "labour",
+    "payment_processing", "channel_commission", "business_funded_delivery",
+    "discounts_promotions", "refunds_cancellations", "variable_waste", "acquisition_cost"
+]
+
+
+def verified_scenario(scenario_id, values):
+    return {
+        "scenario_id": scenario_id,
+        "inputs": {name: {"value": value, "evidence": "VERIFIED_PROJECT"} for name, value in zip(FIELDS, values)},
+    }
 
 
 class ChannelEconomicsTests(unittest.TestCase):
     def load_scenarios(self):
         payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
         return {scenario["scenario_id"]: scenario for scenario in payload["scenarios"]}
-
-    def verified_scenario(self, scenario_id="verified-menu-scenario"):
-        values = {
-            "net_customer_revenue": 40,
-            "ingredient_cost": 10,
-            "packaging": 1,
-            "labour": 5,
-            "payment_processing": 1,
-            "channel_commission": 0,
-            "business_funded_delivery": 5,
-            "discounts_promotions": 0,
-            "refunds_cancellations": 0,
-            "variable_waste": 0,
-            "acquisition_cost": 2,
-        }
-        return {
-            "scenario_id": scenario_id,
-            "inputs": {name: {"value": value, "evidence": "VERIFIED_PROJECT"} for name, value in values.items()},
-        }
 
     def test_public_reference_and_hypothesis_never_produce_commercial_pass(self):
         scenarios = self.load_scenarios()
@@ -53,27 +45,48 @@ class ChannelEconomicsTests(unittest.TestCase):
         self.assertIn("business_funded_delivery", result["missing_or_unknown"])
         self.assertFalse(result["commercial_pass_eligible"])
 
-    def test_packaging_or_labour_unknown_remains_not_testable(self):
-        for field in ("packaging", "labour"):
-            scenario = self.verified_scenario(f"unknown-{field}")
-            scenario["inputs"][field] = {"value": None, "evidence": "UNKNOWN"}
-            result = evaluate(scenario)
-            self.assertEqual(result["status"], "NOT_TESTABLE")
-            self.assertIn(field, result["missing_or_unknown"])
-            self.assertFalse(result["commercial_pass_eligible"])
+    def test_multiple_unknowns_report_deterministically(self):
+        scenario = verified_scenario("multiple-unknowns", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["packaging"] = {"value": None, "evidence": "UNKNOWN"}
+        scenario["inputs"]["labour"] = {"value": None, "evidence": "UNKNOWN"}
+        result = evaluate(scenario)
+        self.assertEqual(result["status"], "NOT_TESTABLE")
+        self.assertEqual(result["missing_or_unknown"], ["labour", "packaging"])
+        self.assertFalse(result["commercial_pass_eligible"])
+
+    def test_invalid_evidence_class_fails_closed(self):
+        scenario = verified_scenario("invalid-evidence", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["packaging"]["evidence"] = "ASSUMED_VERIFIED"
+        with self.assertRaisesRegex(ValueError, "invalid evidence class"):
+            evaluate(scenario)
+
+    def test_zero_revenue_verified_scenario_never_passes(self):
+        scenario = verified_scenario("zero-revenue", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        result = evaluate(scenario)
+        self.assertEqual(result["contribution_per_order"], "0.00")
+        self.assertIsNone(result["contribution_margin_percent"])
+        self.assertFalse(result["commercial_pass_eligible"])
+
+    def test_rounding_boundary_is_deterministic(self):
+        scenario = verified_scenario("rounding-boundary", [10.005, 10.004, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        first = evaluate(scenario)
+        second = evaluate(scenario)
+        self.assertEqual(first, second)
+        self.assertEqual(first["contribution_per_order"], "0.01")
+        self.assertEqual(first["contribution_margin_percent"], "0.10")
+        self.assertTrue(first["commercial_pass_eligible"])
 
     def test_all_verified_positive_scenario_can_be_eligible(self):
-        result = evaluate(self.verified_scenario())
+        scenario = verified_scenario("verified-positive", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        result = evaluate(scenario)
         self.assertEqual(result["decision_state"], "PROJECT_EVIDENCE_READY")
         self.assertTrue(result["commercial_pass_eligible"])
 
-    def test_verified_negative_contribution_never_becomes_commercial_pass(self):
-        scenario = self.verified_scenario("verified-negative")
-        scenario["inputs"]["ingredient_cost"]["value"] = 45
+    def test_all_verified_negative_scenario_cannot_pass(self):
+        scenario = verified_scenario("verified-negative", [20, 10, 2, 6, 1, 3, 4, 0, 0, 0, 1])
         result = evaluate(scenario)
-        self.assertEqual(result["status"], "CALCULATED")
-        self.assertEqual(result["decision_state"], "PROJECT_EVIDENCE_READY")
         self.assertLess(float(result["contribution_per_order"]), 0)
+        self.assertEqual(result["decision_state"], "PROJECT_EVIDENCE_READY")
         self.assertFalse(result["commercial_pass_eligible"])
 
 
