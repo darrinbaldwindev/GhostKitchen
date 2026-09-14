@@ -24,7 +24,7 @@ Verified current vertical:
 - `tests/test_channel_economics.py` exists on main.
 - `fixtures/economics/channel-scenarios.sample.json` exists on main.
 - `.github/workflows/economics-validation.yml` runs deterministic tests and renders sample scenarios.
-- latest scanned Economics validation run on head `ddfb2d872ca116b2cf18d3a98d53670b0c228237` completed SUCCESS.
+- baseline Economics validation on head `ddfb2d872ca116b2cf18d3a98d53670b0c228237` completed SUCCESS.
 
 ## Batch objective
 Harden the P0 economics calculator's fail-closed numeric-input boundary without changing commercial assumptions, selecting a concept/channel, or promoting public/hypothesis evidence to verified project evidence.
@@ -32,36 +32,48 @@ Harden the P0 economics calculator's fail-closed numeric-input boundary without 
 ## Tasks
 
 ### VB-01 — Non-finite numeric hardening
-Status: IN PROGRESS
+Status: COMPLETE
+
+Evidence:
+- `tools/channel_economics.py` now explicitly rejects NaN and +/-Infinity before money values are quantized or compared.
+- rejection is field-specific.
 
 Acceptance:
-- NaN and +/-Infinity cannot enter contribution calculations;
-- rejection is deterministic and field-specific;
-- no non-finite input can become commercial-pass eligible.
+- NaN and +/-Infinity cannot enter contribution calculations — PASS;
+- rejection is deterministic and field-specific — PASS;
+- no non-finite input can become commercial-pass eligible — PASS by fail-closed rejection.
 
 ### VB-02 — Deterministic regression tests
-Status: IN PROGRESS
+Status: COMPLETE
+
+Evidence:
+- `tests/test_channel_economics.py` covers NaN, positive infinity and negative infinity on a required cost input.
+- existing public-reference/hypothesis/UNKNOWN safeguards remain present.
 
 Acceptance:
-- tests cover NaN, positive infinity and negative infinity;
-- existing public-reference/hypothesis/UNKNOWN safeguards remain intact;
-- test output remains deterministic.
+- tests cover NaN, positive infinity and negative infinity — PASS;
+- existing public-reference/hypothesis/UNKNOWN safeguards remain intact — PASS;
+- test output remains deterministic — PASS under exact-head CI.
 
 ### VB-03 — Exact-head CI verification
-Status: PENDING
+Status: COMPLETE
+
+Evidence:
+- exact tested head: `eb906dc8e52a51c4ccf6e2209935b76806987131`;
+- Economics validation run: `34800066744`;
+- observed status: COMPLETED;
+- observed conclusion: SUCCESS.
 
 Acceptance:
-- GitHub Actions run for the resulting exact head is inspected;
-- SUCCESS is claimed only when observed;
-- failure is recorded rather than inferred away.
+- exact-head GitHub Actions inspected — PASS;
+- SUCCESS claimed only after observation — PASS.
 
 ### VB-04 — Issue/evidence checkpoint
-Status: PENDING
+Status: COMPLETE
 
-Acceptance:
-- resulting evidence is linked back to active P0 issue #29 where tooling permits;
-- no overall commercial GREEN is claimed;
-- next safe batch is named from fresh evidence.
+Evidence:
+- checkpoint recorded against active P0 issue #29.
+- no overall commercial GREEN claimed.
 
 ## Guardrails
 - No franchise pricing, royalty or earnings claim.
@@ -74,3 +86,9 @@ Acceptance:
 ## Execution log
 - Batch file created after fresh repository, issue, test/tool and CI scan.
 - Baseline CI observed SUCCESS at head `ddfb2d872ca116b2cf18d3a98d53670b0c228237`.
+- Non-finite numeric hardening committed in `79afab68e2e93a4731bc7504b94083cfc53fcdd8`.
+- Regression coverage committed in exact tested head `eb906dc8e52a51c4ccf6e2209935b76806987131`.
+- Exact-head Economics validation run `34800066744` completed SUCCESS.
+
+## Next safe vertical batch
+Fresh-scan again first. If issue #29 remains the highest-value unblocked P0, audit evidence provenance boundaries and representative-menu fixture coverage without inventing project evidence. Otherwise advance the next highest-value current GhostKitchen gate identified by repo evidence.
