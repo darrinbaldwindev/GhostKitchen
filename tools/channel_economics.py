@@ -20,6 +20,7 @@ REQUIRED = [
 ALLOWED_EVIDENCE = {"VERIFIED_PROJECT", "PUBLIC_REFERENCE", "HYPOTHESIS", "UNKNOWN"}
 ALLOWED_SCENARIO_KEYS = {"scenario_id", "inputs"}
 ALLOWED_BATCH_KEYS = {"status", "source_note", "scenarios"}
+ALLOWED_INPUT_ITEM_KEYS = {"value", "evidence"}
 
 
 def money(value, field="value"):
@@ -61,6 +62,9 @@ def evaluate(scenario):
         if not isinstance(item, dict):
             missing.append(field)
             continue
+        unknown_item_keys = set(item) - ALLOWED_INPUT_ITEM_KEYS
+        if unknown_item_keys:
+            raise ValueError(f"unknown keys for {field}: {sorted(unknown_item_keys)}")
         ev = item.get("evidence", "UNKNOWN")
         if ev not in ALLOWED_EVIDENCE:
             raise ValueError(f"invalid evidence class for {field}: {ev}")
