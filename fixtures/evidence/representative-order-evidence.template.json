@@ -1,0 +1,97 @@
+{
+  "template_version": "1.0",
+  "authority": "EVIDENCE_CAPTURE_ONLY",
+  "commercial_pass_eligible": false,
+  "concept": "UNKNOWN",
+  "representative_order_id": "",
+  "observation_date": "",
+  "observer": "",
+  "packaging": {
+    "configuration_id": "",
+    "components": [
+      {
+        "component": "",
+        "sku_or_description": "",
+        "quantity_used": null,
+        "pack_quantity": null,
+        "purchase_or_quote_value": null,
+        "freight_treatment": "UNKNOWN",
+        "gst_treatment": "UNKNOWN",
+        "source": "",
+        "source_date": "",
+        "evidence": "UNKNOWN"
+      }
+    ],
+    "pack_time_seconds": {
+      "value": null,
+      "source": "",
+      "source_date": "",
+      "evidence": "UNKNOWN"
+    },
+    "hold_tests": [
+      {
+        "minutes": 20,
+        "leakage": "UNKNOWN",
+        "seal_integrity": "UNKNOWN",
+        "condensation": "UNKNOWN",
+        "temperature_observation": "UNKNOWN",
+        "texture_observation": "UNKNOWN",
+        "presentation": "UNKNOWN",
+        "overall_result": "UNKNOWN"
+      },
+      {
+        "minutes": 30,
+        "leakage": "UNKNOWN",
+        "seal_integrity": "UNKNOWN",
+        "condensation": "UNKNOWN",
+        "temperature_observation": "UNKNOWN",
+        "texture_observation": "UNKNOWN",
+        "presentation": "UNKNOWN",
+        "overall_result": "UNKNOWN"
+      },
+      {
+        "minutes": 40,
+        "leakage": "UNKNOWN",
+        "seal_integrity": "UNKNOWN",
+        "condensation": "UNKNOWN",
+        "temperature_observation": "UNKNOWN",
+        "texture_observation": "UNKNOWN",
+        "presentation": "UNKNOWN",
+        "overall_result": "UNKNOWN"
+      }
+    ]
+  },
+  "labour": {
+    "worker_count": null,
+    "observations": [
+      {
+        "task": "",
+        "category": "UNKNOWN",
+        "active_seconds": null,
+        "elapsed_seconds": null,
+        "concurrent_work": "UNKNOWN",
+        "abnormal_or_rework": false,
+        "notes": "",
+        "evidence": "UNKNOWN"
+      }
+    ],
+    "loaded_hourly_labour_rate": {
+      "value": null,
+      "source": "",
+      "source_date": "",
+      "scope": "",
+      "evidence": "UNKNOWN"
+    }
+  },
+  "economics_handoff": {
+    "packaging_cost_per_order": {
+      "value": null,
+      "evidence": "UNKNOWN"
+    },
+    "direct_labour_cost_per_order": {
+      "value": null,
+      "evidence": "UNKNOWN"
+    },
+    "notes": "Do not feed values into commercial-pass evaluation until the evidence protocol requirements are satisfied. UNKNOWN must not be replaced with zero."
+  }
+}
