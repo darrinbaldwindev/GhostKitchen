@@ -24,8 +24,13 @@ ALLOWED_BATCH_KEYS = {"status", "source_note", "scenarios"}
 
 def money(value, field="value"):
     try:
-        return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        parsed = Decimal(str(value))
+        if not parsed.is_finite():
+            raise ValueError(f"non-finite numeric value for {field}: {value!r}")
+        return parsed.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     except (InvalidOperation, ValueError, TypeError) as error:
+        if isinstance(error, ValueError) and str(error).startswith("non-finite numeric value"):
+            raise
         raise ValueError(f"invalid numeric value for {field}: {value!r}") from error
 
 
