@@ -6,9 +6,9 @@ Continue the owner-directed vertical-batch cadence after a fresh exact-head / is
 ## Fresh scan
 - Canonical repository: `darrinbaldwindev/GhostKitchen`
 - Exact starting `main` head: `9de30860d8cdee66881fe7d48185054388b333d5`
-- `fixtures/evidence/representative-order-evidence.template.json` exists as capture structure but, before this batch, had no deterministic ingestion validator.
-- Draft PR #32 remains open and overlaps economics metadata hardening; this batch does not duplicate or merge that work.
-- No supplier contact, purchase, physical observation, concept selection, launch or deployment is authorised by this batch.
+- `fixtures/evidence/representative-order-evidence.template.json` existed as capture structure but, before this batch, had no deterministic ingestion validator.
+- Draft PR #32 remained open and overlapped economics metadata hardening; this batch did not duplicate or merge that work.
+- No supplier contact, purchase, physical observation, concept selection, launch or deployment was authorised by this batch.
 
 ## Vertical objective
 Make representative-order evidence fail closed before it can be handed into unit economics.
@@ -56,18 +56,25 @@ Created `tests/test_representative_order_evidence.py` covering:
 Synthetic test data is test-only and is not project evidence.
 
 ### VE-03 — Integrate validator into CI
-Status: IN PROGRESS
+Status: COMPLETE
 
-The existing Economics validation workflow already runs all `test_*.py`; this batch also adds explicit rendering/validation of the representative-order template so CLI integrity is exercised on every workflow run.
+Updated `.github/workflows/economics-validation.yml` so every run:
+1. executes the full deterministic `test_*.py` suite;
+2. renders the sample channel economics scenarios;
+3. validates the representative-order evidence template through the CLI.
+
+Exact integration head: `614b47c4238cefc46916e4fac4c7eb7e938032e8`.
+Workflow run `34826348852`, job `103919303482`: SUCCESS. All steps, including deterministic economics/evidence tests and representative-order template validation, completed successfully.
 
 ### VE-04 — Preserve evidence/commercial boundary
 Status: COMPLETE
 
 This batch does not calculate a project packaging cost, labour cost, AOV, contribution margin or concept PASS. It adds an integrity gate only.
 
-## Gate state
-- Evidence record structural validator: implemented
-- Evidence adversarial tests: implemented
+## Gate state after batch
+- Evidence record structural validator: GREEN
+- Evidence adversarial tests: GREEN
+- CI integration: GREEN at exact head `614b47c4238cefc46916e4fac4c7eb7e938032e8`
 - Economics handoff: BLOCKED until real project evidence satisfies support rules
 - Packaging physical tests: UNKNOWN / not performed
 - Labour observations: UNKNOWN / not performed
@@ -75,4 +82,4 @@ This batch does not calculate a project packaging cost, labour cost, AOV, contri
 - Commercial PASS: BLOCKED
 
 ## Next safe vertical
-After exact-head CI verification, advance actual evidence collection readiness rather than inventing observations. Preferred next dependency is a concept-specific representative-order test packet that can be printed/executed physically and later fed through this validator.
+Fresh-scan first. Then advance actual evidence collection readiness rather than inventing observations. Preferred next dependency is a concept-specific representative-order field-test packet for burgers/chicken, Asian street food and healthy/protein bowls, reusing the same 20/30/40-minute packaging and labour evidence protocol and producing records compatible with `tools/representative_order_evidence.py`.
