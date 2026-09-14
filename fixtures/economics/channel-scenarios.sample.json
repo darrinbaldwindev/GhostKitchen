@@ -1,0 +1,54 @@
+{
+  "status": "DECISION_SUPPORT_ONLY",
+  "source_note": "Public fee references and hypotheses only; not project quotes or launch approval.",
+  "scenarios": [
+    {
+      "scenario_id": "marketplace-base-hypothesis",
+      "inputs": {
+        "net_customer_revenue": {"value": 35.00, "evidence": "HYPOTHESIS"},
+        "ingredient_cost": {"value": 10.50, "evidence": "HYPOTHESIS"},
+        "packaging": {"value": 1.50, "evidence": "HYPOTHESIS"},
+        "labour": {"value": 5.00, "evidence": "HYPOTHESIS"},
+        "payment_processing": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "channel_commission": {"value": 10.50, "evidence": "PUBLIC_REFERENCE"},
+        "business_funded_delivery": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "discounts_promotions": {"value": 1.75, "evidence": "HYPOTHESIS"},
+        "refunds_cancellations": {"value": 0.70, "evidence": "HYPOTHESIS"},
+        "variable_waste": {"value": 0.70, "evidence": "HYPOTHESIS"},
+        "acquisition_cost": {"value": 0.00, "evidence": "HYPOTHESIS"}
+      }
+    },
+    {
+      "scenario_id": "direct-order-base-hypothesis",
+      "inputs": {
+        "net_customer_revenue": {"value": 35.00, "evidence": "HYPOTHESIS"},
+        "ingredient_cost": {"value": 10.50, "evidence": "HYPOTHESIS"},
+        "packaging": {"value": 1.50, "evidence": "HYPOTHESIS"},
+        "labour": {"value": 5.00, "evidence": "HYPOTHESIS"},
+        "payment_processing": {"value": 0.91, "evidence": "PUBLIC_REFERENCE"},
+        "channel_commission": {"value": 0.00, "evidence": "PUBLIC_REFERENCE"},
+        "business_funded_delivery": {"value": 5.50, "evidence": "PUBLIC_REFERENCE"},
+        "discounts_promotions": {"value": 1.75, "evidence": "HYPOTHESIS"},
+        "refunds_cancellations": {"value": 0.70, "evidence": "HYPOTHESIS"},
+        "variable_waste": {"value": 0.70, "evidence": "HYPOTHESIS"},
+        "acquisition_cost": {"value": 3.00, "evidence": "HYPOTHESIS"}
+      }
+    },
+    {
+      "scenario_id": "unknown-delivery-not-testable",
+      "inputs": {
+        "net_customer_revenue": {"value": 35.00, "evidence": "HYPOTHESIS"},
+        "ingredient_cost": {"value": 10.50, "evidence": "HYPOTHESIS"},
+        "packaging": {"value": 1.50, "evidence": "HYPOTHESIS"},
+        "labour": {"value": 5.00, "evidence": "HYPOTHESIS"},
+        "payment_processing": {"value": 1.00, "evidence": "HYPOTHESIS"},
+        "channel_commission": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "business_funded_delivery": {"value": null, "evidence": "UNKNOWN"},
+        "discounts_promotions": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "refunds_cancellations": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "variable_waste": {"value": 0.00, "evidence": "HYPOTHESIS"},
+        "acquisition_cost": {"value": 0.00, "evidence": "HYPOTHESIS"}
+      }
+    }
+  ]
+}
