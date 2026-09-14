@@ -17,7 +17,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Run deterministic economics tests
+      - name: Run deterministic economics and evidence tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Render sample scenarios
         run: python tools/channel_economics.py fixtures/economics/channel-scenarios.sample.json
+      - name: Validate representative-order evidence template
+        run: python tools/representative_order_evidence.py fixtures/evidence/representative-order-evidence.template.json
