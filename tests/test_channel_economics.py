@@ -9,17 +9,26 @@ FIXTURE = Path(__file__).parents[1] / "fixtures" / "economics" / "channel-scenar
 
 
 class ChannelEconomicsTests(unittest.TestCase):
-    def test_public_reference_and_hypothesis_never_produce_commercial_pass(self):
+    def load_scenarios(self):
         payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
-        for scenario in payload["scenarios"][:2]:
-            result = evaluate(scenario)
+        return {scenario["scenario_id"]: scenario for scenario in payload["scenarios"]}
+
+    def test_public_reference_and_hypothesis_never_produce_commercial_pass(self):
+        scenarios = self.load_scenarios()
+        for scenario_id in (
+            "marketplace-base-hypothesis",
+            "marketplace-high-commission-hypothesis",
+            "direct-order-base-hypothesis",
+            "direct-order-no-paid-acquisition-hypothesis",
+        ):
+            result = evaluate(scenarios[scenario_id])
             self.assertEqual(result["status"], "CALCULATED")
             self.assertEqual(result["decision_state"], "DECISION_SUPPORT_ONLY")
             self.assertFalse(result["commercial_pass_eligible"])
 
     def test_unknown_required_input_is_not_testable(self):
-        payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
-        result = evaluate(payload["scenarios"][2])
+        scenarios = self.load_scenarios()
+        result = evaluate(scenarios["unknown-delivery-not-testable"])
         self.assertEqual(result["status"], "NOT_TESTABLE")
         self.assertIn("business_funded_delivery", result["missing_or_unknown"])
         self.assertFalse(result["commercial_pass_eligible"])
