@@ -130,13 +130,61 @@ class ChannelEconomicsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unknown scenario keys"):
             evaluate(scenario)
 
+    def test_unknown_evidence_item_keys_fail_closed(self):
+        scenario = verified_scenario("unknown-evidence-key", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["packaging"]["verified"] = True
+        with self.assertRaisesRegex(ValueError, "unknown evidence keys for packaging"):
+            evaluate(scenario)
+
     def test_unknown_batch_keys_fail_closed(self):
         with self.assertRaisesRegex(ValueError, "unknown batch keys"):
             evaluate_batch({"scenarios": [], "commercial_override": True})
 
+    def test_declared_batch_status_is_fail_closed_enum(self):
+        self.assertEqual(evaluate_batch({"status": "DECISION_SUPPORT_ONLY", "scenarios": []})["status"], "EMPTY")
+        with self.assertRaisesRegex(ValueError, "invalid batch status"):
+            evaluate_batch({"status": "PROJECT_EVIDENCE_READY", "scenarios": []})
+
+    def test_source_note_must_be_non_empty_string_when_supplied(self):
+        for value in ("", "   ", 123, [], {}):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "source_note must be a non-empty string"):
+                    evaluate_batch({"source_note": value, "scenarios": []})
+        self.assertEqual(evaluate_batch({"source_note": "Public reference only.", "scenarios": []})["status"], "EMPTY")
+
     def test_empty_batch_is_explicit_and_non_commercial(self):
         result = evaluate_batch({"scenarios": []})
-        self.assertEqual(result, {"status": "EMPTY", "commercial_pass_eligible": False, "results": []})
+        self.assertEqual(result, {
+            "status": "EMPTY",
+            "commercial_pass_eligible": False,
+            "results": [],
+            "evidence_summary": {
+                "calculated_scenarios": 0,
+                "not_testable_scenarios": 0,
+                "project_evidence_ready_scenarios": 0,
+                "decision_support_only_scenarios": 0,
+            },
+        })
+
+    def test_evidence_summary_is_descriptive_and_cannot_upgrade_eligibility(self):
+        verified = verified_scenario("verified", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        hypothesis = verified_scenario("hypothesis", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        for item in hypothesis["inputs"].values():
+            item["evidence"] = "HYPOTHESIS"
+        unknown = verified_scenario("unknown", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        unknown["inputs"]["business_funded_delivery"] = {"value": None, "evidence": "UNKNOWN"}
+
+        result = evaluate_batch({"status": "DECISION_SUPPORT_ONLY", "scenarios": [unknown, hypothesis, verified]})
+        self.assertEqual(result["evidence_summary"], {
+            "calculated_scenarios": 2,
+            "not_testable_scenarios": 1,
+            "project_evidence_ready_scenarios": 1,
+            "decision_support_only_scenarios": 1,
+        })
+        self.assertTrue(result["commercial_pass_eligible"])
+        by_id = {item["scenario_id"]: item for item in result["results"]}
+        self.assertFalse(by_id["hypothesis"]["commercial_pass_eligible"])
+        self.assertFalse(by_id["unknown"]["commercial_pass_eligible"])
 
     def test_batch_output_is_sorted_by_scenario_id_and_deterministic(self):
         b = verified_scenario("b-case", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
