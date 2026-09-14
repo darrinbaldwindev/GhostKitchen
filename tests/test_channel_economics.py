@@ -60,6 +60,17 @@ class ChannelEconomicsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid evidence class"):
             evaluate(scenario)
 
+    def test_unknown_nested_input_keys_fail_closed(self):
+        scenario = verified_scenario("nested-override", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["packaging"]["commercial_override"] = True
+        with self.assertRaisesRegex(ValueError, "unknown keys for packaging"):
+            evaluate(scenario)
+
+        scenario = verified_scenario("nested-note", [40, 10, 1, 5, 1, 0, 5, 0, 0, 0, 2])
+        scenario["inputs"]["labour"]["annotation"] = "treat as verified"
+        with self.assertRaisesRegex(ValueError, "unknown keys for labour"):
+            evaluate(scenario)
+
     def test_zero_revenue_verified_scenario_never_passes(self):
         scenario = verified_scenario("zero-revenue", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         result = evaluate(scenario)
