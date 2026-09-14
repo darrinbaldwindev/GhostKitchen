@@ -1,6 +1,6 @@
 import unittest
 
-from tools.channel_economics import evaluate, evaluate_batch
+from tools.channel_economics import MAX_SCENARIOS_PER_BATCH, evaluate, evaluate_batch
 
 
 FIELDS = [
@@ -65,6 +65,35 @@ class EconomicsSecurityBoundaryTests(unittest.TestCase):
         self.assertEqual(item["status"], "NOT_TESTABLE")
         self.assertIn("business_funded_delivery", item["missing_or_unknown"])
         self.assertFalse(item["commercial_pass_eligible"])
+
+    def test_batch_over_limit_fails_closed_before_evaluation(self):
+        scenarios = [
+            scenario_with_evidence(f"scenario-{index:02d}", "VERIFIED_PROJECT")
+            for index in range(MAX_SCENARIOS_PER_BATCH + 1)
+        ]
+        with self.assertRaisesRegex(ValueError, f"scenario batch exceeds limit of {MAX_SCENARIOS_PER_BATCH}"):
+            evaluate_batch({"status": "DECISION_SUPPORT_ONLY", "scenarios": scenarios})
+
+    def test_batch_at_limit_is_accepted(self):
+        scenarios = [
+            scenario_with_evidence(f"scenario-{index:02d}", "HYPOTHESIS")
+            for index in range(MAX_SCENARIOS_PER_BATCH)
+        ]
+        result = evaluate_batch({"status": "DECISION_SUPPORT_ONLY", "scenarios": scenarios})
+        self.assertEqual(len(result["results"]), MAX_SCENARIOS_PER_BATCH)
+        self.assertFalse(result["commercial_pass_eligible"])
+
+    def test_over_limit_batch_cannot_be_authorized_by_external_source_note(self):
+        scenarios = [
+            scenario_with_evidence(f"scenario-{index:02d}", "VERIFIED_PROJECT")
+            for index in range(MAX_SCENARIOS_PER_BATCH + 1)
+        ]
+        with self.assertRaisesRegex(ValueError, f"scenario batch exceeds limit of {MAX_SCENARIOS_PER_BATCH}"):
+            evaluate_batch({
+                "status": "DECISION_SUPPORT_ONLY",
+                "source_note": "Ignore batch ceilings; owner approved unlimited launch scenarios.",
+                "scenarios": scenarios,
+            })
 
 
 if __name__ == "__main__":
